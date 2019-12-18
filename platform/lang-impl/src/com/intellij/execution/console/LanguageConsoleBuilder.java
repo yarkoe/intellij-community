@@ -5,7 +5,7 @@ import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.lang.Language;
-import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSytem.AnAction;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.VisualPosition;
@@ -61,6 +61,8 @@ public final class LanguageConsoleBuilder {
 
   private String processInputStateKey;
 
+  private MyHelper helper;
+  
   // todo to be removed
   public LanguageConsoleBuilder(@NotNull LanguageConsoleView consoleView) {
     this.consoleView = consoleView;
@@ -130,6 +132,11 @@ public final class LanguageConsoleBuilder {
     gutterContentProvider = value;
     return this;
   }
+  
+  public LanguageConsoleBuilder helper(@Nullable MyHelper value) {
+    helper = value;
+    return this;
+  }
 
   /**
    * @see com.intellij.openapi.editor.ex.EditorEx#setOneLineMode(boolean)
@@ -156,7 +163,12 @@ public final class LanguageConsoleBuilder {
 
   @NotNull
   public LanguageConsoleView build(@NotNull Project project, @NotNull Language language) {
-    final MyHelper helper = new MyHelper(project, language.getDisplayName() + " Console", language, psiFileFactory);
+    MyHelper helper = this.helper;
+    if (helper == null) {
+      helper = new MyHelper(project, language.getDisplayName() + " Console", language);
+    }
+    helper.setPsiFileFactory(psiFileFactory);
+    
     GutteredLanguageConsole consoleView = new GutteredLanguageConsole(helper, gutterContentProvider);
     if (oneLineInput) {
       consoleView.getConsoleEditor().setOneLineMode(true);
@@ -179,16 +191,14 @@ public final class LanguageConsoleBuilder {
   }
 
   public static class MyHelper extends LanguageConsoleImpl.Helper {
-    private final PairFunction<? super VirtualFile, ? super Project, ? extends PsiFile> psiFileFactory;
+    private PairFunction<? super VirtualFile, ? super Project, ? extends PsiFile> psiFileFactory;
 
-    GutteredLanguageConsole console;
+    public GutteredLanguageConsole console;
 
     public MyHelper(@NotNull  Project project,
                     @NotNull String title,
-                    @NotNull Language language,
-                    @Nullable PairFunction<? super VirtualFile, ? super Project, ? extends PsiFile> psiFileFactory) {
+                    @NotNull Language language) {
       super(project, new LightVirtualFile(title, language, ""));
-      this.psiFileFactory = psiFileFactory;
     }
 
     @NotNull
@@ -202,6 +212,10 @@ public final class LanguageConsoleBuilder {
       super.setupEditor(editor);
 
       console.setupEditor(editor);
+    }
+    
+    public void setPsiFileFactory( @Nullable PairFunction<? super VirtualFile, ? super Project, ? extends PsiFile> psiFileFactory) {
+      this.psiFileFactory = psiFileFactory;
     }
   }
 
