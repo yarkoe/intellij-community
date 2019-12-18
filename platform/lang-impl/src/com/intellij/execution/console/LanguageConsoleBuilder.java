@@ -5,7 +5,7 @@ import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.lang.Language;
-import com.intellij.openapi.actionSytem.AnAction;
+import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.VisualPosition;
